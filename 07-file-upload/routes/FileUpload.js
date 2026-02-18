@@ -13,6 +13,7 @@ const {
 router.post("/loaclFileUpload",localFileUpload);
 router.post("/imageUpload",imageUpload);
 router.post("/videoUpload",videoUpload);
+router.post("/imageReducerUpload",imageReducerUpload);
 
 //export router
 module.exports=router;

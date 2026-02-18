@@ -34,11 +34,16 @@ function isFileTypeSupported(type, supportedTypes) {
 }
 
 //function for uploading file to cloudinary
-async function uploadFileToCloudinary(file, folder) {
-   const options = {
+async function uploadFileToCloudinary(file, folder, quality) {
+  const options = {
     folder: folder,
     resource_type: "auto", // ✅ correct spelling
   };
+    if (quality) {
+    options.transformation = [
+      { quality: quality }
+    ];
+  }
   return await cloudinary.uploader.upload(file.tempFilePath, options);
 }
 
@@ -114,7 +119,7 @@ exports.videoUpload = async (req, res) => {
       });
     }
 
-     //file format supported
+    //file format supported
     const response = await uploadFileToCloudinary(file, "cloudinaryFiles");
     console.log(response);
 
@@ -131,8 +136,56 @@ exports.videoUpload = async (req, res) => {
       imageUrl: response.secure_url,
       message: "image successfully uploaded.",
     });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({
+      success: false,
+      message: "something went wrong.",
+    });
+  }
+};
 
+//imageReducerUpload handler
+exports.imageReducerUpload = async (req, res) => {
+  try {
+    //data fetch
+    const { name, tags, email } = req.body;
+    console.log(name, tags, email);
 
+    const file = req.files.imageFile;
+    console.log(file);
+
+    //validation
+    const supportedTypes = ["jpeg", "png", "jpg"];
+    const fileType = file.name.split(".")[1].toLowerCase();
+
+    console.log("filetype:", fileType);
+
+    //file format not supported
+    if (!isFileTypeSupported(fileType, supportedTypes)) {
+      return res.status(400).json({
+        success: false,
+        message: "file format not supported.",
+      });
+    }
+
+    //file format supported
+    const response = await uploadFileToCloudinary(file, "cloudinaryFiles", 30);
+    console.log(response);
+
+    //db me entry save karni hai
+    const fileData = await File.create({
+      name,
+      tags,
+      email,
+      videoUrl: response.secure_url,
+    });
+
+    res.json({
+      success: true,
+      videoUrl: response.secure_url,
+      message: "image successfully uploaded.",
+    });
   } catch (error) {
     console.error(error);
     res.status(400).json({
