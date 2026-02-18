@@ -11,6 +11,7 @@ const {
 
 //define rotes
 router.post("/loaclFileUpload",localFileUpload);
+router.post("/imageUpload",imageUpload);
 
 //export router
 module.exports=router;
