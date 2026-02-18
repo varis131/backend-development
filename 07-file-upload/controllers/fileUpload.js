@@ -35,7 +35,10 @@ function isFileTypeSupported(type, supportedTypes) {
 
 //function for uploading file to cloudinary
 async function uploadFileToCloudinary(file, folder) {
-  const options = { folder };
+   const options = {
+    folder: folder,
+    resource_type: "auto", // ✅ correct spelling
+  };
   return await cloudinary.uploader.upload(file.tempFilePath, options);
 }
 
@@ -59,11 +62,59 @@ exports.imageUpload = async (req, res) => {
     if (!isFileTypeSupported(fileType, supportedTypes)) {
       return res.status(400).json({
         success: false,
-        message: "file format enot supported.",
+        message: "file format not supported.",
       });
     }
 
     //file format supported
+    const response = await uploadFileToCloudinary(file, "cloudinaryFiles");
+    console.log(response);
+
+    //db me entry save karni hai
+    const fileData = await File.create({
+      name,
+      tags,
+      email,
+      videoUrl: response.secure_url,
+    });
+
+    res.json({
+      success: true,
+      videoUrl: response.secure_url,
+      message: "image successfully uploaded.",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({
+      success: false,
+      message: "something went wrong.",
+    });
+  }
+};
+
+//video upload ka handler
+exports.videoUpload = async (req, res) => {
+  try {
+    //data fetch
+    const { name, tags, email } = req.body;
+    console.log(name, tags, email);
+
+    const file = req.files.videoFile;
+    //validation
+    const supportedTypes = ["mp4", "mov"];
+    const fileType = file.name.split(".")[1].toLowerCase();
+
+    console.log("filetype:", fileType);
+
+    //file format not supported
+    if (!isFileTypeSupported(fileType, supportedTypes)) {
+      return res.status(400).json({
+        success: false,
+        message: "file format enot supported.",
+      });
+    }
+
+     //file format supported
     const response = await uploadFileToCloudinary(file, "cloudinaryFiles");
     console.log(response);
 
@@ -80,6 +131,8 @@ exports.imageUpload = async (req, res) => {
       imageUrl: response.secure_url,
       message: "image successfully uploaded.",
     });
+
+
   } catch (error) {
     console.error(error);
     res.status(400).json({
