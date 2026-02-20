@@ -1,6 +1,7 @@
 const File = require("../models/File");
 const cloudinary = require("cloudinary").v2;
 
+
 //localFileUpload controller (handler)
 exports.localFileUpload = async (req, res) => {
   try {
@@ -85,7 +86,7 @@ exports.imageUpload = async (req, res) => {
 
     res.json({
       success: true,
-      videoUrl: response.secure_url,
+      imageUrl: response.secure_url,
       message: "image successfully uploaded.",
     });
   } catch (error) {
