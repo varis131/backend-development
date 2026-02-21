@@ -81,7 +81,7 @@ exports.imageUpload = async (req, res) => {
       name,
       tags,
       email,
-      videoUrl: response.secure_url,
+      imageUrl: response.secure_url,
     });
 
     res.json({
